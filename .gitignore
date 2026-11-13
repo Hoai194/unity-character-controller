@@ -1,0 +1,21 @@
+/[Ll]ibrary/
+/[Ll]ogs/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Uu]serSettings/
+/[Mm]emoryCaptures/
+
+# IDE specific files
+.vs/
+.vscode/
+*.sln
+*.slnx
+*.csproj
+*.user
+*.userprefs
+*.pidb
+*.suo
+*.unityproj
+*.booproj
