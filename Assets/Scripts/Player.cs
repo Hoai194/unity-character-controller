@@ -5,35 +5,67 @@ using UnityEngine.InputSystem;
 public class Player : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 7f;
+    [SerializeField] private GameInput gameInput;
     // [SerializeField] private Animator animator;
     private bool isMoving;
     private void Update()
     {
-        Vector2 inputVector = Vector2.zero;
-        // for movement use isPressed(for continuously movement) 
-        // for jump,.. use wasPressedThisFrame (return true for single frame when key is pressed -  single frame action)
-        if (Keyboard.current.wKey.isPressed)
-        {
-            inputVector.y += 1;
-        }
-        if (Keyboard.current.sKey.isPressed)
-        {
-            inputVector.y -= 1;
-        }
-        if (Keyboard.current.aKey.isPressed)
-        {
-            inputVector.x -= 1;
-        }
-        if (Keyboard.current.dKey.isPressed)
-        {
-            inputVector.x += 1;
-        }
-        // normalize input vector to avoid faster diagonal movement
-        inputVector = inputVector.normalized;
-        Vector3 moveDir = new Vector3(inputVector.x, 0f, inputVector.y);
-        //deltaTime = 1/frames per second
-        transform.position += moveDir * moveSpeed * Time.deltaTime ;
         
+        HandleMovement();
+        
+    }
+
+    public bool IsMoving(){
+        return isMoving;
+    }
+
+    private void HandleMovement()
+    {
+        //input system refactored to GameInput.cs script
+        Vector2 inputVector = gameInput.GetMovementVectorNormalized();
+        
+        Vector3 moveDir = new Vector3(inputVector.x, 0f, inputVector.y);
+
+        float moveDistance = moveSpeed * Time.deltaTime;
+        float playerRadius = .7f;
+        float playerHeight = 2f;
+        bool canMove = !Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, moveDir, moveDistance);
+
+        if(!canMove)
+        {
+            //cannot move towards moveDir
+            //attempt only X movement
+            Vector3 moveDirX = new Vector3(moveDir.x, 0, 0).normalized;
+            canMove = !Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, moveDirX, moveDistance);
+
+            if (canMove)
+            {
+                moveDir = moveDirX;
+            }
+            else
+            {
+                //cannot move towards moveDirX
+                //attempt only Z movement
+                Vector3 moveDirZ = new Vector3(0, 0, moveDir.z).normalized;
+                canMove = !Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, moveDirZ, moveDistance);
+                if (canMove)
+                {
+                    moveDir = moveDirZ;
+                }
+                else
+                {
+                    //cannot move in any direction
+                }
+
+            }
+            
+        }
+        //deltaTime = 1/frames per second
+        if (canMove)
+        {
+            transform.position += moveDir * moveDistance;
+        }
+
         isMoving = moveDir != Vector3.zero;
         if( isMoving)
         {
@@ -42,10 +74,6 @@ public class Player : MonoBehaviour
         }
 
         // animator.SetBool("isMoving", isMoving);
-        
-    }
 
-    public bool IsMoving(){
-        return isMoving;
     }
 }
