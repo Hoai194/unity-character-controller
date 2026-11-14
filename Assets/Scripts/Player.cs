@@ -1,9 +1,12 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 7f;
+    // [SerializeField] private Animator animator;
+    private bool isMoving;
     private void Update()
     {
         Vector2 inputVector = Vector2.zero;
@@ -27,8 +30,22 @@ public class Player : MonoBehaviour
         }
         // normalize input vector to avoid faster diagonal movement
         inputVector = inputVector.normalized;
-        Vector3 moveDir = new Vector3(inputVector.x, 0, inputVector.y);
+        Vector3 moveDir = new Vector3(inputVector.x, 0f, inputVector.y);
         //deltaTime = 1/frames per second
         transform.position += moveDir * moveSpeed * Time.deltaTime ;
+        
+        isMoving = moveDir != Vector3.zero;
+        if( isMoving)
+        {
+            float rotateSpeed = 10f;
+            transform.forward = Vector3.Slerp(transform.forward, moveDir, Time.deltaTime * rotateSpeed);
+        }
+
+        // animator.SetBool("isMoving", isMoving);
+        
+    }
+
+    public bool IsMoving(){
+        return isMoving;
     }
 }
